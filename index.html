@@ -521,13 +521,41 @@
 
     <script>
         let allPrompts = [];
+        let currentFilteredPrompts = [];
         let currentFilter = 'all';
         let searchQuery = '';
+        let currentModalPromptText = "";
+
+        // Universal Clipboard copy (works on HTTPS and HTTP IP addresses)
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) resolve();
+                        else reject(new Error('execCommand failed'));
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            }
+        }
 
         // Fetch prompts JSON
         async function loadPrompts() {
             try {
-                // Check both relative paths (for root or images folder)
                 let res = await fetch('prompts.json');
                 if (!res.ok) {
                     res = await fetch('../prompts.json');
@@ -549,11 +577,11 @@
             const grid = document.getElementById('gallery-grid');
             const totalCountEl = document.getElementById('total-count');
 
-            let filtered = allPrompts.filter(item => {
+            currentFilteredPrompts = allPrompts.filter(item => {
                 const matchesCategory = currentFilter === 'all' || 
                     (item.category && item.category.toLowerCase() === currentFilter.toLowerCase());
 
-                const q = searchQuery.toLowerCase();
+                const q = searchQuery.toLowerCase().trim();
                 const matchesSearch = !q || 
                     (item.title && item.title.toLowerCase().includes(q)) || 
                     (item.prompt && item.prompt.toLowerCase().includes(q)) ||
@@ -562,9 +590,9 @@
                 return matchesCategory && matchesSearch;
             });
 
-            totalCountEl.textContent = `${allPrompts.length} Prompts Collected (${filtered.length} shown)`;
+            totalCountEl.textContent = `${allPrompts.length} Prompts Collected (${currentFilteredPrompts.length} shown)`;
 
-            if (filtered.length === 0) {
+            if (currentFilteredPrompts.length === 0) {
                 grid.innerHTML = `
                     <div class="empty-state">
                         <h3>No prompts found matching your filter</h3>
@@ -574,15 +602,13 @@
                 return;
             }
 
-            grid.innerHTML = filtered.map((item, idx) => {
-                // Image source resolution
+            grid.innerHTML = currentFilteredPrompts.map((item, idx) => {
                 let imgSrc = item.local_image_path || item.image_url;
-                // If local path has backslashes, format for web
                 if (imgSrc) imgSrc = imgSrc.replace(/\\/g, '/');
 
                 return `
                     <div class="card">
-                        <div class="image-wrapper" onclick="openModal(${idx}, '${encodeURIComponent(JSON.stringify(item))}')">
+                        <div class="image-wrapper" onclick="openModalByIndex(${idx})">
                             <span class="card-category-badge">${escapeHtml(item.category || 'AI')}</span>
                             <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.src='${escapeHtml(item.image_url)}'">
                         </div>
@@ -591,7 +617,7 @@
                             <div class="prompt-preview">${escapeHtml(item.prompt)}</div>
                             <div class="card-footer">
                                 <span class="author-text">👤 ${escapeHtml(item.author || 'Anonymous')}</span>
-                                <button class="copy-btn" onclick="copyPrompt(this, '${escapeHtml(item.prompt).replace(/'/g, "\\'")}')">
+                                <button class="copy-btn" onclick="copyCardPrompt(this, ${idx})">
                                     📋 Copy
                                 </button>
                             </div>
@@ -611,10 +637,27 @@
                 .replace(/'/g, '&#039;');
         }
 
-        let currentModalPromptText = "";
+        function copyCardPrompt(btn, idx) {
+            const item = currentFilteredPrompts[idx];
+            if (!item || !item.prompt) return;
 
-        function openModal(idx, itemJsonEncoded) {
-            const item = JSON.parse(decodeURIComponent(itemJsonEncoded));
+            copyText(item.prompt).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error("Copy failed:", err);
+            });
+        }
+
+        function openModalByIndex(idx) {
+            const item = currentFilteredPrompts[idx];
+            if (!item) return;
+
             currentModalPromptText = item.prompt;
 
             let imgSrc = item.local_image_path || item.image_url;
@@ -638,21 +681,9 @@
             document.getElementById('preview-modal').classList.remove('active');
         }
 
-        function copyPrompt(btn, text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const orig = btn.innerHTML;
-                btn.innerHTML = '✓ Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerHTML = orig;
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-
         function copyModalPrompt() {
             if (!currentModalPromptText) return;
-            navigator.clipboard.writeText(currentModalPromptText).then(() => {
+            copyText(currentModalPromptText).then(() => {
                 const btn = document.getElementById('modal-copy-btn');
                 btn.innerHTML = '✓ Copied to Clipboard!';
                 btn.classList.add('copied');
@@ -660,6 +691,8 @@
                     btn.innerHTML = '📋 Copy Full Prompt';
                     btn.classList.remove('copied');
                 }, 2000);
+            }).catch(err => {
+                console.error("Modal copy failed:", err);
             });
         }
 
