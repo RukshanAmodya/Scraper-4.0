@@ -83,12 +83,28 @@ class FaymasScraper:
             """)
             conn.commit()
 
-    def is_already_scraped(self, url):
-        """Check if URL already exists in database."""
+    def is_already_scraped(self, url, slug=None):
+        """
+        3-Tier Duplicate Check:
+        1. Check exact URL in SQLite Database
+        2. Check Slug in SQLite Database
+        """
+        if not slug:
+            slug = url.rstrip("/").split("/")[-1]
+            
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT 1 FROM prompts WHERE url = ?", (url,))
+            cursor.execute("SELECT 1 FROM prompts WHERE url = ? OR slug = ?", (url, slug))
             return cursor.fetchone() is not None
+
+    def check_local_image_exists(self, filename_prefix):
+        """Check if an image file for this item already exists on disk."""
+        if not os.path.exists(self.images_dir):
+            return False
+        for f in os.listdir(self.images_dir):
+            if f.startswith(filename_prefix) and f.endswith(('.webp', '.jpg', '.jpeg', '.png')):
+                return os.path.join(self.images_dir, f)
+        return None
 
     def get_total_scraped_count(self):
         """Return total number of items stored in database."""
