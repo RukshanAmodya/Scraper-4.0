@@ -11,6 +11,17 @@ module.exports = {
       env: {
         PYTHONUNBUFFERED: "1"
       }
+    },
+    {
+      name: "faymas-gallery",
+      script: "gallery_server.py",
+      interpreter: "python3",
+      args: "--port 8080 --dir scraped_data",
+      autorestart: true,
+      watch: false,
+      env: {
+        PYTHONUNBUFFERED: "1"
+      }
     }
   ]
 };

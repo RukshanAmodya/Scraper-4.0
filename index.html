@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faymas AI Prompts & Image Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0b0f17;
+            --bg-card: #131b26;
+            --bg-card-hover: #1c2736;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --badge-bg: rgba(99, 102, 241, 0.15);
+            --badge-text: #818cf8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: rgba(11, 15, 23, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stats-badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Controls */
+        .controls-area {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+            max-width: 500px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* Gallery Grid */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 125%; /* 4:5 aspect ratio */
+            background: #000;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .image-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .image-wrapper img {
+            transform: scale(1.04);
+        }
+
+        .card-category-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.35;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .prompt-preview {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-style: italic;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .author-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 800px) {
+            .modal-content {
+                flex-direction: column;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+        }
+
+        .modal-image-area {
+            flex: 1.2;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+
+        .modal-image-area img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-info-area {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            z-index: 10;
+        }
+
+        .modal-prompt-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: #e5e7eb;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="header-top">
+                <div class="logo-area">
+                    <div class="logo-icon">✨</div>
+                    <div class="logo-text">
+                        <h1>Faymas AI Prompts Gallery</h1>
+                        <p>24/7 Automated High-Res Prompt Showcase</p>
+                    </div>
+                </div>
+                <div class="stats-badge">
+                    <div class="pulse-dot"></div>
+                    <span id="total-count">Loading prompts...</span>
+                </div>
+            </div>
+
+            <div class="controls-area">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Search prompts, styles, keywords...">
+                </div>
+
+                <div class="filter-tags" id="category-filters">
+                    <button class="filter-btn active" data-category="all">All</button>
+                    <button class="filter-btn" data-category="Photography">Photography</button>
+                    <button class="filter-btn" data-category="Anime">Anime</button>
+                    <button class="filter-btn" data-category="Portrait">Portrait</button>
+                    <button class="filter-btn" data-category="Cinematic">Cinematic</button>
+                    <button class="filter-btn" data-category="Fashion">Fashion</button>
+                    <button class="filter-btn" data-category="3D">3D</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="gallery-grid" id="gallery-grid">
+            <div class="empty-state">Loading gallery items...</div>
+        </div>
+    </main>
+
+    <!-- Fullscreen Modal -->
+    <div class="modal" id="preview-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-image-area">
+                <img id="modal-img" src="" alt="Full view">
+            </div>
+            <div class="modal-info-area">
+                <div id="modal-category" style="color: var(--badge-text); font-weight: 600; font-size: 0.85rem;"></div>
+                <h2 id="modal-title" style="font-size: 1.35rem; line-height: 1.3;"></h2>
+                <div id="modal-author" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+                
+                <h4 style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted);">AI Prompt:</h4>
+                <div class="modal-prompt-box" id="modal-prompt"></div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: auto;">
+                    <button class="copy-btn" id="modal-copy-btn" style="flex: 1; justify-content: center; padding: 0.75rem;" onclick="copyModalPrompt()">
+                        📋 Copy Full Prompt
+                    </button>
+                    <a id="modal-source-btn" href="#" target="_blank" style="background: var(--bg-card-hover); color: #fff; text-decoration: none; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.8rem; display: flex; align-items: center; border: 1px solid var(--border-color);">
+                        Original Post ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Faymas AI Scraper & Gallery • Running 24/7 Continuous Collector
+    </footer>
+
+    <script>
+        let allPrompts = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        // Fetch prompts JSON
+        async function loadPrompts() {
+            try {
+                // Check both relative paths (for root or images folder)
+                let res = await fetch('prompts.json');
+                if (!res.ok) {
+                    res = await fetch('../prompts.json');
+                }
+                allPrompts = await res.json();
+                renderGallery();
+            } catch (err) {
+                console.error("Failed to load prompts.json:", err);
+                document.getElementById('gallery-grid').innerHTML = `
+                    <div class="empty-state">
+                        <h3>⚠️ Unable to load prompts.json</h3>
+                        <p style="margin-top: 0.5rem;">Ensure <code>prompts.json</code> exists in the directory.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const totalCountEl = document.getElementById('total-count');
+
+            let filtered = allPrompts.filter(item => {
+                const matchesCategory = currentFilter === 'all' || 
+                    (item.category && item.category.toLowerCase() === currentFilter.toLowerCase());
+
+                const q = searchQuery.toLowerCase();
+                const matchesSearch = !q || 
+                    (item.title && item.title.toLowerCase().includes(q)) || 
+                    (item.prompt && item.prompt.toLowerCase().includes(q)) ||
+                    (item.category && item.category.toLowerCase().includes(q));
+
+                return matchesCategory && matchesSearch;
+            });
+
+            totalCountEl.textContent = `${allPrompts.length} Prompts Collected (${filtered.length} shown)`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No prompts found matching your filter</h3>
+                        <p style="margin-top: 0.5rem;">Try changing your search terms or category filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map((item, idx) => {
+                // Image source resolution
+                let imgSrc = item.local_image_path || item.image_url;
+                // If local path has backslashes, format for web
+                if (imgSrc) imgSrc = imgSrc.replace(/\\/g, '/');
+
+                return `
+                    <div class="card">
+                        <div class="image-wrapper" onclick="openModal(${idx}, '${encodeURIComponent(JSON.stringify(item))}')">
+                            <span class="card-category-badge">${escapeHtml(item.category || 'AI')}</span>
+                            <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.src='${escapeHtml(item.image_url)}'">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h3>
+                            <div class="prompt-preview">${escapeHtml(item.prompt)}</div>
+                            <div class="card-footer">
+                                <span class="author-text">👤 ${escapeHtml(item.author || 'Anonymous')}</span>
+                                <button class="copy-btn" onclick="copyPrompt(this, '${escapeHtml(item.prompt).replace(/'/g, "\\'")}')">
+                                    📋 Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        let currentModalPromptText = "";
+
+        function openModal(idx, itemJsonEncoded) {
+            const item = JSON.parse(decodeURIComponent(itemJsonEncoded));
+            currentModalPromptText = item.prompt;
+
+            let imgSrc = item.local_image_path || item.image_url;
+            if (imgSrc) imgSrc = imgSrc.replace(/\\/g, '/');
+
+            document.getElementById('modal-img').src = imgSrc;
+            document.getElementById('modal-title').textContent = item.title;
+            document.getElementById('modal-category').textContent = (item.category || 'AI Prompt').toUpperCase();
+            document.getElementById('modal-author').textContent = `Created by ${item.author || 'Anonymous'} • ${item.date_published ? new Date(item.date_published).toLocaleDateString() : ''}`;
+            document.getElementById('modal-prompt').textContent = item.prompt;
+            document.getElementById('modal-source-btn').href = item.url || '#';
+
+            const copyBtn = document.getElementById('modal-copy-btn');
+            copyBtn.innerHTML = '📋 Copy Full Prompt';
+            copyBtn.classList.remove('copied');
+
+            document.getElementById('preview-modal').classList.add('active');
+        }
+
+        function closeModal(e) {
+            document.getElementById('preview-modal').classList.remove('active');
+        }
+
+        function copyPrompt(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyModalPrompt() {
+            if (!currentModalPromptText) return;
+            navigator.clipboard.writeText(currentModalPromptText).then(() => {
+                const btn = document.getElementById('modal-copy-btn');
+                btn.innerHTML = '✓ Copied to Clipboard!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '📋 Copy Full Prompt';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Search listener
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderGallery();
+        });
+
+        // Category filter listener
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.category;
+                renderGallery();
+            });
+        });
+
+        // Auto reload every 30 seconds for live updates
+        setInterval(loadPrompts, 30000);
+
+        // Initial load
+        loadPrompts();
+    </script>
+</body>
+</html>
