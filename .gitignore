@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Environment / Local settings
+.env
+
+# Scraped large data (optional: comment out if you want to push scraped media to git)
+# scraped_data/images/*.webp
+# scraped_data/images/*.png
+# scraped_data/images/*.jpg
+
+# Logs
+*.log
+scraped_data/*.log
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

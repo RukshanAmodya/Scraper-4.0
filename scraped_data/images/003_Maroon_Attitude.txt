@@ -1,0 +1,10 @@
+Title: Maroon Attitude
+Category: Photography
+Source: https://faymas.in/prompt/maroon-attitude-4dafd892
+
+Prompt:
+Create an ultra-photorealistic portrait matching the uploaded reference image as closely as possible. A young South Asian man with thick, naturally textured black hair, light moustache and short beard, wearing dark olive aviator sunglasses and a deep maroon textured shirt with black collar and pocket detailing. He stands confidently with his arms crossed, wearing a stylish metal wristwatch.
+
+Maintain the same pose, body proportions, facial expression, hairstyle, sunglasses, clothing, camera angle, framing, background, and overall composition as the reference. Warm outdoor daylight, soft natural shadows, realistic skin texture and pores, detailed hair strands, authentic fabric texture, shallow depth of field. Keep the background with the warm orange wall, yellow architectural element, blurred people, and red-and-white signage naturally out of focus.
+
+Shot like a professional candid DSLR photograph, 85mm portrait lens, realistic depth of field, cinematic but natural color grading, high dynamic range, ultra-detailed, 8K, true photograph, not illustration or 3D render. Preserve natural anatomy and realistic proportions. Vertical 4:5 composition, no extra fingers, no distorted features, no artificial beauty filter, no watermark or unwanted text.

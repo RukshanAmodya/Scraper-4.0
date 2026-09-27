@@ -1,0 +1,16 @@
+[Unit]
+Description=Faymas AI Image & Prompt 24/7 Scraper Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/faymas-scraper
+ExecStart=/usr/bin/python3 /opt/faymas-scraper/faymas_scraper.py --daemon --interval 60
+Restart=always
+RestartSec=10
+StandardOutput=append:/opt/faymas-scraper/scraped_data/daemon_stdout.log
+StandardError=append:/opt/faymas-scraper/scraped_data/daemon_stderr.log
+
+[Install]
+WantedBy=multi-user.target

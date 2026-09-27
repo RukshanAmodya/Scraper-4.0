@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  faymas-scraper:
+    build: .
+    container_name: faymas-ai-scraper
+    restart: unless-stopped
+    environment:
+      - CHECK_INTERVAL=60
+      - WEBHOOK_URL=
+    volumes:
+      - ./scraped_data:/app/scraped_data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
