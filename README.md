@@ -83,46 +83,78 @@ python faymas_scraper.py --url "https://faymas.in/prompt/romantic-couple-portrai
 
 ---
 
-## 🐳 Docker Deployment (Recommended for VPS / Cloud)
+## 🚀 Non-Docker 24/7 Deployment Options (Docker නැතුව Run කරන ක්‍රම)
 
-Deploy in background with persistent volume:
+### Option 1: Using PM2 (වඩාත්ම පහසු සහ ජනප්‍රියම ක්‍රමය ⭐)
+PM2 මගින් script එක background එකේ run වීම, crash වුවහොත් auto-restart වීම සහ logs බලාගැනීම ඉතාම පහසුය.
 
 ```bash
-# Start container in detached mode
-docker-compose up -d --build
+# 1. PM2 install කරගන්න (server එකේ නැත්නම්)
+sudo apt install npm -y && sudo npm install -g pm2
 
-# View real-time logs
-docker-compose logs -f
+# 2. Scraper එක background එකේ run කරන්න
+pm2 start ecosystem.config.js
+# හෝ කෙලින්ම:
+pm2 start faymas_scraper.py --name "faymas-bot" --interpreter python3 -- --daemon --interval 60
 
-# Stop scraper
-docker-compose down
+# 3. Server reboot වුවත් auto start වීමට
+pm2 startup
+pm2 save
+
+# Commands:
+pm2 logs faymas-scraper    # Live logs බැලීමට
+pm2 status                 # Status බැලීමට
+pm2 restart faymas-scraper # Restart කිරීමට
+pm2 stop faymas-scraper    # Stop කිරීමට
 ```
 
 ---
 
-## 🐧 Linux Server Deployment via Systemd (Ubuntu / Debian VPS)
-
-To run as a permanent background service that automatically restarts on system reboot:
+### Option 2: Using Linux `screen` / `tmux` (තත්පර 5න් Setup කළ හැකි ක්‍රමය)
+Terminal එක close කළත් background එකේ run වේ:
 
 ```bash
-# 1. Copy project to /opt
-sudo cp -r . /opt/faymas-scraper
-cd /opt/faymas-scraper
+# 1. Screen session එකක් open කරන්න
+screen -S faymas_bot
 
-# 2. Install dependencies
-sudo pip3 install -r requirements.txt
+# 2. Scraper එක run කරන්න
+python3 faymas_scraper.py --daemon --interval 60
 
-# 3. Copy systemd service file
+# 3. Detach වීමට (keyboard shortcut):
+# Ctrl + A ඔබා පසුව D ඔබන්න.
+
+# නැවත screen එකට ඇතුළු වීමට:
+screen -r faymas_bot
+```
+
+---
+
+### Option 3: Using `nohup` (Linux Default Command)
+කිසිදු අමතර software එකක් install නොකර:
+
+```bash
+# Background එකේ run කර log එක save කරගැනීම
+nohup python3 faymas_scraper.py --daemon --interval 60 > scraper_output.log 2>&1 &
+
+# Logs බලන්න
+tail -f scraper_output.log
+```
+
+---
+
+### Option 4: Linux Systemd Service (Ubuntu / Debian VPS)
+```bash
 sudo cp faymas-scraper.service /etc/systemd/system/
-
-# 4. Enable and start service
 sudo systemctl daemon-reload
-sudo systemctl enable faymas-scraper
-sudo systemctl start faymas-scraper
+sudo systemctl enable --now faymas-scraper
+```
 
-# 5. Check service status & logs
-sudo systemctl status faymas-scraper
-sudo journalctl -u faymas-scraper -f
+---
+
+## 🐳 Docker Deployment (Optional)
+
+```bash
+docker-compose up -d --build
 ```
 
 ---
